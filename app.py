@@ -38,10 +38,6 @@ db.init_app(app)
 bcrypt.init_app(app) 
 login_manager.init_app(app)  
 
-ml_model_path = os.path.join(os.path.dirname(__file__), "models", "xgboost_regressor_r2_0_928_v1.pkl")
-standard_scaler_path = os.path.join(os.path.dirname(__file__), "models", "sc.pkl")
-inference = Inference(ml_model_path, standard_scaler_path)
-
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -184,6 +180,9 @@ class Inference:
         prediction = self.model.predict(scaled_data)
         return prediction
 
+ml_model_path = os.path.join(os.path.dirname(__file__), "models", "xgboost_regressor_r2_0_928_v1.pkl")
+standard_scaler_path = os.path.join(os.path.dirname(__file__), "models", "sc.pkl")
+inference = Inference(ml_model_path, standard_scaler_path)
 
 @app.route('/predict', methods=['POST'])
 @login_required
@@ -261,7 +260,7 @@ def get_weather():
         return jsonify({"error": "City not found"}), 404
 
 
-# if __name__ == '__main__':
-#     app.run()
+#if __name__ == '__main__':
+#    app.run()
 
 
