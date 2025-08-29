@@ -19,17 +19,31 @@ BASE_URL = "http://api.openweathermap.org/data/2.5/weather"
 
 
 
-app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY", "fallback-secret")
-API_KEY = os.environ.get("API_KEY", "fallback-api-key")
+app = Flask(_name_)
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-key')
+
+
 # db_path = r"C:\Users\Sekhar\OneDrive\Desktop\Project\instance\site.db"
-db_path = os.path.join(os.path.dirname(__file__), "instance", "site.db")
+db_path = os.path.join(os.path.dirname(_file_), "instance", "site.db")
 os.makedirs(os.path.dirname(db_path), exist_ok=True)
-app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{db_path}"
+db_url = os.getenv('DATABASE_URL')
+if db_url:
+    # Render may provide postgres://; SQLAlchemy needs postgresql://
+    db_url = db_url.replace("postgres://", "postgresql://")
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_url
+else:
+    db_path = os.path.join(os.path.dirname(_file_), "instance", "site.db")
+    os.makedirs(os.path.dirname(db_path), exist_ok=True)
+    app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{db_path}"
 
 db.init_app(app) 
 bcrypt.init_app(app) 
 login_manager.init_app(app)  
+
+ml_model_path = os.path.join(os.path.dirname(_file_), "models", "xgboost_regressor_r2_0_928_v1.pkl")
+standard_scaler_path = os.path.join(os.path.dirname(_file_), "models", "sc.pkl")
+inference = Inference(ml_model_path, standard_scaler_path)
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -88,7 +102,7 @@ def how_it_works():
     return render_template('how-it-works.html')
 
 class Inference:
-    def __init__(self, model_path, sc_path):
+    def _init_(self, model_path, sc_path):
         self.model_path = model_path
         self.sc_path = sc_path
 
@@ -250,12 +264,10 @@ def get_weather():
         return jsonify({"error": "City not found"}), 404
 
 
-if __name__ == '__main__':
-    # ml_model_path = r"C:\Users\Sekhar\OneDrive\Desktop\Project\models\xgboost_regressor_r2_0_928_v1.pkl"
-    # standard_scaler_path = r"C:\Users\Sekhar\OneDrive\Desktop\Project\models\sc.pkl"
-    ml_model_path = os.path.join(os.path.dirname(__file__), "models", "xgboost_regressor_r2_0_928_v1.pkl")
-    standard_scaler_path = os.path.join(os.path.dirname(__file__), "models", "sc.pkl")
-    inference = Inference(ml_model_path, standard_scaler_path)
-    app.run()
-
-
+# if _name_ == '_main_':
+#     # ml_model_path = r"C:\Users\Sekhar\OneDrive\Desktop\Project\models\xgboost_regressor_r2_0_928_v1.pkl"
+#     # standard_scaler_path = r"C:\Users\Sekhar\OneDrive\Desktop\Project\models\sc.pkl"
+#     ml_model_path = os.path.join(os.path.dirname(_file_), "models", "xgboost_regressor_r2_0_928_v1.pkl")
+#     standard_scaler_path = os.path.join(os.path.dirname(_file_), "models", "sc.pkl")
+#     inference = Inference(ml_model_path, standard_scaler_path)
+#     app.run()
