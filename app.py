@@ -11,7 +11,7 @@ from extensions import db, bcrypt, login_manager
 from models import User, Prediction
 
 # weather
-# import requests
+import requests
 # from flask import Flask, jsonify
 
 API_KEY = "0e56ae7f51d02709b86de5c3e1a4ee21"
@@ -22,10 +22,17 @@ BASE_URL = "http://api.openweathermap.org/data/2.5/weather"
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY", "fallback-secret")
 API_KEY = os.environ.get("API_KEY", "fallback-api-key")
-# db_path = r"C:\Users\Sekhar\OneDrive\Desktop\Project\instance\site.db"
-db_path = os.path.join(os.path.dirname(__file__), "instance", "site.db")
-os.makedirs(os.path.dirname(db_path), exist_ok=True)
-app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{db_path}"
+
+db_url = os.environ.get("DATABASE_URL")
+if db_url:
+    # SQLAlchemy needs 'postgresql://', not 'postgres://'
+    db_url = db_url.replace("postgres://", "postgresql://")
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_url
+else:
+    # fallback to local SQLite
+    db_path = os.path.join(os.path.dirname(__file__), "instance", "site.db")
+    os.makedirs(os.path.dirname(db_path), exist_ok=True)
+    app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{db_path}"
 
 db.init_app(app) 
 bcrypt.init_app(app) 
@@ -254,7 +261,7 @@ def get_weather():
         return jsonify({"error": "City not found"}), 404
 
 
-if __name__ == '__main__':
-    app.run()
+# if __name__ == '__main__':
+#     app.run()
 
 
