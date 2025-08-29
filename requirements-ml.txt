@@ -1,0 +1,4 @@
+torch==2.7.1
+xgboost==3.0.4
+openai-whisper==20250625
+triton>=2
